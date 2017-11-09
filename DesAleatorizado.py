@@ -3,19 +3,21 @@ from numpy import linalg as la
 import numpy as np
 import sys
 import pyfits
+import scipy.sparse as sp
 
 wavelength = pyfits.open("wavelengths.fits")[0].data #1000
 espectros = pyfits.open("sdss_spectra.fits")[0].data #4000x1000
 
 n = len(espectros) #numero de datos (espectros)
 d = len(espectros[0]) #dimension de los datos (longitudes de onda)
+print np.shape(espectros)
 
 epsilon = 0.1
 
 s = int(np.log(n)/epsilon)
 m = int(np.log(n)/epsilon**2)
 t = 3/(2*np.log(2)*m)
-
+'''
 Pessimist = []
 
 for i in range(n):
@@ -35,19 +37,62 @@ for j in range(d):
         Delta[index][j] = 1
 
 
-#for q in range(s):
-#    sigma = [0 for i in range(n)]
-#    for j in range(d):
-#       for i in range(n):
-#            if (espectros[i][j]!=0):
-#               for k in range(j):
-#                   if (espectros[i][k]!=0):
-#                       for rk in B[q]:
-#                           if (p[rk][k] == 1):
-#                               if (br == 0):
-#                                   br = 1
+#Voy a escribir Delta en formato sparse, tal vez deberia venir de antes as\'i,
+Delta=sp.csr_matrix(Delta, shape=(m,d)) #Ayuda memoria para el futuro: getcol(i)
+'''
+#Voy a escribir los datos (V) en formato sparse,
+V=sp.csc_matrix(espectros, shape=(n,d))
+
+#Inicio
+
+b=np.zeros((n)) #Linea 1 del algoritmo 2
+
+#L\'inea 2 del algoritmo 2: Los estimadores se inicializan por default
+#iguales a uno para todos sus valores.
+PesimistaMas=np.ones((n))
+PesimistraMenos=np.ones((n))
+
+#L\'inea 3 del algoritmo 2: La lista vacia de los valores sigma.
+sigma=[]
+
+ThetaMas=sp.lil_matrix((n,m))
+ThetaMenos=sp.lil_matrix((n,m))
+
+nu=sp.lil_matrix((n,m))
+
+print type(V[1])
+print type(V.getrow(1))
+
+#print V[1].getcol(0)
+#  (0, 0)        2.18929
+
+#Comienzan los c\'alculos de PesimistaMas
+for r in range(0,m):  #L\'inea 5 del algoritmo 2
+    for j in range(0,d):
+        for i in range(0,n):
+            if b[i]==0.:
+                b[i]=1.
+                ThetaMas[i,r]=1.
+                ThetaMenos[i,r]=1.
+                nu[i,r]=0.
+            if b[i]==1.:
+                ThetaMas[i,r]=ThetaMas[i,r]#-
+                ThetaMenos[i,r]=ThetaMenos[i,r]#+
+            break
+        break
+    break
+            
+        
 
 
 
 
-sys.exit()
+
+#Lo que sigue despu\'es del inicio
+
+
+
+
+
+
+#sys.exit()
