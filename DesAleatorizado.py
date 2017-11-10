@@ -16,30 +16,14 @@ epsilon = 0.1
 
 s = int(np.log(n)/epsilon)
 m = int(np.log(n)/epsilon**2)
-t = 3/(2*np.log(2)*m)
-'''
-Pessimist = []
-
-for i in range(n):
-    Pessimist.append(np.exp(-s**2*t*np.log(2) + s*np.log(1+epsilon)*(1-la.norm(espectros[i],4) )/2 ))
-
-Loss = sum(list(Pessimist))
-
-Delta = np.array([[0 for j in range(d)] for i in range(m) ])
-delta = int(m/s)
-
-B = [[] for x in range(s)]
-
-for j in range(d):
-    for q in range(s):
-        B[q] = (list(i for i in range(delta*q, delta + delta*q) ))
-        index = np.random.choice(B[q])
-        Delta[index][j] = 1
 
 
-#Voy a escribir Delta en formato sparse, tal vez deberia venir de antes as\'i,
-Delta=sp.csr_matrix(Delta, shape=(m,d)) #Ayuda memoria para el futuro: getcol(i)
-'''
+
+#Para la matriz signo.
+
+#Por mientras para tener una matriz delta.
+Delta=sp.csr_matrix(espectros[0:m,],shape=(m,d))
+
 #Voy a escribir los datos (V) en formato sparse,
 V=sp.csc_matrix(espectros, shape=(n,d))
 
@@ -50,7 +34,7 @@ b=np.zeros((n)) #Linea 1 del algoritmo 2
 #L\'inea 2 del algoritmo 2: Los estimadores se inicializan por default
 #iguales a uno para todos sus valores.
 PesimistaMas=np.ones((n))
-PesimistraMenos=np.ones((n))
+PesimistaMenos=np.ones((n))
 
 #L\'inea 3 del algoritmo 2: La lista vacia de los valores sigma.
 sigma=[]
@@ -60,27 +44,31 @@ ThetaMenos=sp.lil_matrix((n,m))
 
 nu=sp.lil_matrix((n,m))
 
-print type(V[1])
-print type(V.getrow(1))
-
-#print V[1].getcol(0)
-#  (0, 0)        2.18929
 
 #Comienzan los c\'alculos de PesimistaMas
 for r in range(0,m):  #L\'inea 5 del algoritmo 2
-    for j in range(0,d):
-        for i in range(0,n):
+    NZIndicesDeltar=Delta.getrow(r).nonzero()[1]
+    for j in NZIndicesDeltar:
+        NZIndicesVj=V.getcol(j).nonzero()[0]
+        print NZIndicesVj
+        for i in NZIndicesVj:
+            #V.getcol(j).getrow(i).toarray()[0][0]
             if b[i]==0.:
                 b[i]=1.
                 ThetaMas[i,r]=1.
                 ThetaMenos[i,r]=1.
                 nu[i,r]=0.
             if b[i]==1.:
-                ThetaMas[i,r]=ThetaMas[i,r]#-
-                ThetaMenos[i,r]=ThetaMenos[i,r]#+
-            break
-        break
-    break
+                temp=(V.getcol(j).getrow(i).toarray()[0][0])**2
+                ThetaMas[i,r]=ThetaMas[i,r]-temp/(1+temp)
+                ThetaMenos[i,r]=ThetaMenos[i,r]+temp/(1-temp)
+                PesimistaMas[i]=PesimistaMas[i]*np.sqrt(1+temp/2)**(-1)
+                PesimistaMenos[i]=PesimistaMenos[i]*np.sqrt(1-temp/2)**(-1)
+        for i in range(0,n):
+            if b[i]==1.:
+                PesimistaMas[i]=PesimistaMas[i]*np.sqrt(ThetaMas[i,r])**(-1)
+                PesimistaMenos[i]=PesimistaMenos[i]*np.sqrt(ThetaMenos[i,r])**(-1)
+        b=np.zeros((n))
             
         
 
