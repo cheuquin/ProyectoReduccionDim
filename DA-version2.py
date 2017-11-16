@@ -32,7 +32,6 @@ for i in range(n):
     for j in range(d):
         Pessimist[i][j] = np.exp(-s**2*t*np.log(2) + s*np.log(1+epsilon)*(1- espectros[i][j]**4 )/2)
 
-Loss = sum(list(Pessimist))
 delta = int(m/s)
 
 B = [[] for x in range(s)]
