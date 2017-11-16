@@ -2,58 +2,57 @@ clear
 clc
 close all
 
-n = 400;
-d = 100;
-e = 0.1;
+n = 200; %numero de datos
+d = 100; %dimension de datos
+e = 0.1; % epsilon
 
 resto = ceil((1/e) - mod(ceil(log(n)/e),(1/e)));
 
-m = ceil(log(n)/e) + resto;
-s = ceil(m*e);
-t = 3/(2*log(2)*m);
+m = ceil(log(n)/e) + resto; % Reduccion de dimension
+s = ceil(m*e);  % Numero de bloques
 
-p = ones(m,d)*e;
-Bq = reshape(1:m,1/e,s);
+p = ones(m,d)*e;  % Matriz p inicializada con epsilons en todas sus posiciones
+Bq = reshape(1:m,1/e,s); %posiciones de los bloques Bq = {[1,...,1/e],[1/e+1,...,2/e]....}
 
-p(Bq(:,1),1)=zeros(length(Bq(:,1)),1); %%Arreglar, primera iteracion
-p(Bq(1,1),1)=1;
+p(Bq(:,1),1)=zeros(length(Bq(:,1)),1); 
+p(Bq(1,1),1)=1; %%%%%%%% Arreglar, primera iteracion!!!, se pone el primer bloque de p en [1 0 0 .... 0]
 
-for q = 1:s % bloque q
+for q = 1:s % bloque q hasta s
     
-    if q==1 % primeras filas de bloques
-        ini1=2;
+    if q==1     % Arreglo para la primera iteracion, como ya se inicializo 
+        ini1=2; % el primer bloque para q=1, l debe empezar en 2
     else
-        ini1=1;
+        ini1=1; % pero para las siguientes filas de bloques, l regresa a 1.
     end
     
-    for l = ini1:d % col l -> bloque (q,l) UNIFORME MIRAR INICIAL
+    for l = ini1:d % columna l -> bloque (q,l) 
         
         %% Sumatoria alfas
-        alfa = zeros(length(Bq(:,1)),1);
-        for rr = 1:1/e
+        alfa = zeros(length(Bq(:,1)),1); % vector donde se guardaran los estimadores pesismistas y donde se encontrara el minimo
+        for rr = 1:1/e % Este es el r que queremos optimizar en alfa
             a = 0;
             for j = 1:l-1 % sumatoria alfa
                 
                 %% productoria D
                 D = 1;
                 
-                if q==1 % primeras filas de bloques
-                    ini2=0;
-                else
+                if q==1 % primeras filas de bloques, esto era lo que te 
+                    ini2=0; %decia de que si es la primera fila de bloques
+                else        % no se cumple que q_bar<q, por lo que se vuelve un unico producto
                     ini2=1;
                 end
                 
-                for q_bar = 1:q-ini2
+                for q_bar = 1:q-ini2 % sumatoria de Rho
                     rho = sum(p(Bq(:,q_bar),j).*p(Bq(:,q_bar),l));
-                    D = D*(1+rho);
+                    D = D*(1+rho); %productoria de D
                     
                 end
-                a = a+(D*p(Bq(rr,q),j));
+                a = a+(D*p(Bq(rr,q),j)); %sumatoria de los j<k
             end
-            alfa(rr) = a;
+            alfa(rr) = a; % estimador pesimista para la posicion r en Bq
         end
-        [~,I] = min(alfa);
-        p(Bq(:,q),l) = 0;
-        p(Bq(I,q),l) = 1;
+        [~,I] = min(alfa); % estimador minimo
+        p(Bq(:,q),l) = 0;  % asignacion 1
+        p(Bq(I,q),l) = 1;  % asignacion 0s
     end
 end
