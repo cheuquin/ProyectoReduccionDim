@@ -1,11 +1,14 @@
+clear
+clc
+close all
+
 n = 400;
-d = 50;
+d = 100;
 e = 0.1;
 
+resto = ceil((1/e) - mod(ceil(log(n)/e),(1/e)));
 
-resto = ceil((1/e) - ceil(log(n)/e^2));
-
-m = ceil(log(n)/e^2) + resto;
+m = ceil(log(n)/e) + resto;
 s = ceil(m*e);
 t = 3/(2*log(2)*m);
 
@@ -16,7 +19,14 @@ p(Bq(:,1),1)=zeros(length(Bq(:,1)),1); %%Arreglar, primera iteracion
 p(Bq(1,1),1)=1;
 
 for q = 1:s % bloque q
-    for l = 2:d % col l -> bloque (q,l) UNIFORME MIRAR INICIAL
+    
+    if q==1 % primeras filas de bloques
+        ini1=2;
+    else
+        ini1=1;
+    end
+    
+    for l = ini1:d % col l -> bloque (q,l) UNIFORME MIRAR INICIAL
         
         %% Sumatoria alfas
         alfa = zeros(length(Bq(:,1)),1);
@@ -28,12 +38,12 @@ for q = 1:s % bloque q
                 D = 1;
                 
                 if q==1 % primeras filas de bloques
-                    sust=0;
+                    ini2=0;
                 else
-                    sust=1;
+                    ini2=1;
                 end
                 
-                for q_bar = 1:q-sust
+                for q_bar = 1:q-ini2
                     rho = sum(p(Bq(:,q_bar),j).*p(Bq(:,q_bar),l));
                     D = D*(1+rho);
                     
