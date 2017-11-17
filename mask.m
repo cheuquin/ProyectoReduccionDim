@@ -2,13 +2,13 @@ clear
 clc
 close all
 
-n = 200; %numero de datos
-d = 100; %dimension de datos
-e = 0.1; % epsilon
+n = 500; %numero de datos
+d = 200; %dimension de datos
+e = 0.2; % epsilon
 
-resto = ceil((1/e) - mod(ceil(log(n)/e),(1/e)));
+resto = ceil((1/e) - mod(ceil(log(n)/e^2),(1/e)));
 
-m = ceil(log(n)/e) + resto; % Reduccion de dimension
+m = ceil(log(n)/e^2) + resto; % Reduccion de dimension
 s = ceil(m*e);  % Numero de bloques
 
 p = ones(m,d)*e;  % Matriz p inicializada con epsilons en todas sus posiciones
@@ -54,5 +54,6 @@ for q = 1:s % bloque q hasta s
         [~,I] = min(alfa); % estimador minimo
         p(Bq(:,q),l) = 0;  % asignacion 1
         p(Bq(I,q),l) = 1;  % asignacion 0s
+        disp([q l])
     end
 end

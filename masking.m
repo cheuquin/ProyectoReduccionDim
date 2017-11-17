@@ -1,6 +1,6 @@
 % function masking
 
-n = 50;
+n = 4000;
 d = 1000;
 
 e = 0.1;
